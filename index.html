@@ -31,57 +31,73 @@
         .sorted {
             background-color: #d4edda;
         }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <h1>氣泡排序法演示</h1>
-    <p>以下是氣泡排序法的過程，數組中的元素會兩兩比較並交換，直到排序完成。</p>
+    <p>按下「下一步」按鈕來查看排序過程。</p>
 
-    <h2>原始數組</h2>
-    <div class="array">
-        <div class="element">64</div>
-        <div class="element">34</div>
-        <div class="element">25</div>
-        <div class="element">12</div>
-        <div class="element">22</div>
-        <div class="element">11</div>
-        <div class="element">90</div>
+    <div id="array-container" class="array">
+        <!-- 動態生成數組元素 -->
     </div>
 
-    <h2>排序過程</h2>
-    <p>步驟 1: 比較並交換 <span class="highlight">64</span> 和 <span class="highlight">34</span></p>
-    <div class="array">
-        <div class="element">34</div>
-        <div class="element highlight">64</div>
-        <div class="element">25</div>
-        <div class="element">12</div>
-        <div class="element">22</div>
-        <div class="element">11</div>
-        <div class="element">90</div>
-    </div>
+    <button id="next-step">下一步</button>
 
-    <p>步驟 2: 比較並交換 <span class="highlight">64</span> 和 <span class="highlight">25</span></p>
-    <div class="array">
-        <div class="element">34</div>
-        <div class="element">25</div>
-        <div class="element highlight">64</div>
-        <div class="element">12</div>
-        <div class="element">22</div>
-        <div class="element">11</div>
-        <div class="element">90</div>
-    </div>
+    <script>
+        const array = [64, 34, 25, 12, 22, 11, 90];
+        let i = 0, j = 0;
+        const container = document.getElementById('array-container');
+        const nextStepButton = document.getElementById('next-step');
 
-    <!-- 更多步驟可以依此類推 -->
+        // 初始化數組顯示
+        function renderArray(highlightIndex1 = -1, highlightIndex2 = -1, sortedIndex = -1) {
+            container.innerHTML = '';
+            array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                if (index === highlightIndex1 || index === highlightIndex2) {
+                    element.classList.add('highlight');
+                }
+                if (index > sortedIndex) {
+                    element.classList.add('sorted');
+                }
+                container.appendChild(element);
+            });
+        }
 
-    <h2>排序完成</h2>
-    <div class="array">
-        <div class="element sorted">11</div>
-        <div class="element sorted">12</div>
-        <div class="element sorted">22</div>
-        <div class="element sorted">25</div>
-        <div class="element sorted">34</div>
-        <div class="element sorted">64</div>
-        <div class="element sorted">90</div>
-    </div>
+        // 氣泡排序的單步執行
+        function bubbleSortStep() {
+            if (i < array.length - 1) {
+                if (j < array.length - i - 1) {
+                    // 比較並交換
+                    if (array[j] > array[j + 1]) {
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                    }
+                    renderArray(j, j + 1, array.length - i - 1);
+                    j++;
+                } else {
+                    j = 0;
+                    i++;
+                }
+            } else {
+                renderArray(-1, -1, array.length - 1);
+                nextStepButton.disabled = true; // 禁用按鈕
+                alert('排序完成！');
+            }
+        }
+
+        // 初始化顯示
+        renderArray();
+
+        // 綁定按鈕事件
+        nextStepButton.addEventListener('click', bubbleSortStep);
+    </script>
 </body>
 </html>
