@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣泡排序法演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .array {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .element {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 0 5px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .highlight {
+            background-color: #ffcccb;
+        }
+        .sorted {
+            background-color: #d4edda;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>氣泡排序法演示</h1>
+    <p>按下「下一步」按鈕來查看排序過程。</p>
+
+    <div id="array-container" class="array">
+        <!-- 動態生成數組元素 -->
+    </div>
+
+    <button id="next-step">下一步</button>
+
+    <script>
+        const array = [64, 34, 25, 12, 22, 11, 90];
+        let i = 0, j = 0;
+        const container = document.getElementById('array-container');
+        const nextStepButton = document.getElementById('next-step');
+
+        // 初始化數組顯示
+        function renderArray(highlightIndex1 = -1, highlightIndex2 = -1, sortedIndex = -1) {
+            container.innerHTML = '';
+            array.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+                if (index === highlightIndex1 || index === highlightIndex2) {
+                    element.classList.add('highlight');
+                }
+                if (index > sortedIndex) {
+                    element.classList.add('sorted');
+                }
+                container.appendChild(element);
+            });
+        }
+
+        // 氣泡排序的單步執行
+        function bubbleSortStep() {
+            if (i < array.length - 1) {
+                if (j < array.length - i - 1) {
+                    // 比較並交換
+                    if (array[j] > array[j + 1]) {
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                    }
+                    renderArray(j, j + 1, array.length - i - 1);
+                    j++;
+                } else {
+                    j = 0;
+                    i++;
+                }
+            } else {
+                renderArray(-1, -1, array.length - 1);
+                nextStepButton.disabled = true; // 禁用按鈕
+                alert('排序完成！');
+            }
+        }
+
+        // 初始化顯示
+        renderArray();
+
+        // 綁定按鈕事件
+        nextStepButton.addEventListener('click', bubbleSortStep);
+    </script>
+</body>
+</html>
