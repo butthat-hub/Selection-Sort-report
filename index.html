@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>氣泡排序法演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .array {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .element {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 0 5px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .highlight {
+            background-color: #ffcccb;
+        }
+        .sorted {
+            background-color: #d4edda;
+        }
+    </style>
+</head>
+<body>
+    <h1>氣泡排序法演示</h1>
+    <p>以下是氣泡排序法的過程，數組中的元素會兩兩比較並交換，直到排序完成。</p>
+
+    <h2>原始數組</h2>
+    <div class="array">
+        <div class="element">64</div>
+        <div class="element">34</div>
+        <div class="element">25</div>
+        <div class="element">12</div>
+        <div class="element">22</div>
+        <div class="element">11</div>
+        <div class="element">90</div>
+    </div>
+
+    <h2>排序過程</h2>
+    <p>步驟 1: 比較並交換 <span class="highlight">64</span> 和 <span class="highlight">34</span></p>
+    <div class="array">
+        <div class="element">34</div>
+        <div class="element highlight">64</div>
+        <div class="element">25</div>
+        <div class="element">12</div>
+        <div class="element">22</div>
+        <div class="element">11</div>
+        <div class="element">90</div>
+    </div>
+
+    <p>步驟 2: 比較並交換 <span class="highlight">64</span> 和 <span class="highlight">25</span></p>
+    <div class="array">
+        <div class="element">34</div>
+        <div class="element">25</div>
+        <div class="element highlight">64</div>
+        <div class="element">12</div>
+        <div class="element">22</div>
+        <div class="element">11</div>
+        <div class="element">90</div>
+    </div>
+
+    <!-- 更多步驟可以依此類推 -->
+
+    <h2>排序完成</h2>
+    <div class="array">
+        <div class="element sorted">11</div>
+        <div class="element sorted">12</div>
+        <div class="element sorted">22</div>
+        <div class="element sorted">25</div>
+        <div class="element sorted">34</div>
+        <div class="element sorted">64</div>
+        <div class="element sorted">90</div>
+    </div>
+</body>
+</html>
