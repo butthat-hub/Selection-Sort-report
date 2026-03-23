@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>插入排序法演示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .array {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .element {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            margin: 0 5px 5px 0;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .highlight-key {
+            background-color: #ffcccb;
+        }
+        .highlight-compare {
+            background-color: #ffe58f;
+        }
+        .sorted {
+            background-color: #d4edda;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input[type=number] {
+            width: 80px;
+            padding: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>插入排序法演示</h1>
+    <p>設定元素數量，然後按「生成陣列」開始。按「下一步」查看排序過程。</p>
+
+    <div class="controls">
+        <label for="count">元素數量：</label>
+        <input id="count" type="number" min="2" max="20" value="7" />
+        <button id="generate">生成陣列</button>
+        <button id="next-step" disabled>下一步</button>
+    </div>
+
+    <div id="array-container" class="array"></div>
+
+    <script>
+        let array = [];
+        let i = 1;
+        let j = 0;
+        let key = null;
+        let state = 'prepare'; // prepare, shifting, place
+
+        const container = document.getElementById('array-container');
+        const nextStepButton = document.getElementById('next-step');
+        const generateButton = document.getElementById('generate');
+        const countInput = document.getElementById('count');
+
+        function randomArray(count) {
+            const result = [];
+            for (let k = 0; k < count; k++) {
+                result.push(Math.floor(Math.random() * 90) + 10);
+            }
+            return result;
+        }
+
+        function renderArray(highlightKey = -1, highlightCompare = -1) {
+            container.innerHTML = '';
+            array.forEach((value, idx) => {
+                const element = document.createElement('div');
+                element.className = 'element';
+                element.textContent = value;
+
+                if (idx < i) {
+                    element.classList.add('sorted');
+                }
+                if (idx === highlightKey) {
+                    element.classList.add('highlight-key');
+                }
+                if (idx === highlightCompare) {
+                    element.classList.add('highlight-compare');
+                }
+                container.appendChild(element);
+            });
+        }
+
+        function resetState() {
+            i = 1;
+            j = 0;
+            key = null;
+            state = 'prepare';
+            nextStepButton.disabled = false;
+        }
+
+        function insertionSortStep() {
+            if (i >= array.length) {
+                renderArray();
+                nextStepButton.disabled = true;
+                alert('排序完成！');
+                return;
+            }
+
+            if (state === 'prepare') {
+                key = array[i];
+                j = i - 1;
+                state = 'shifting';
+                renderArray(i, j);
+                return;
+            }
+
+            if (state === 'shifting') {
+                if (j >= 0 && array[j] > key) {
+                    array[j + 1] = array[j];
+                    j--;
+                    renderArray(i, j);
+                } else {
+                    state = 'place';
+                }
+                return;
+            }
+
+            if (state === 'place') {
+                array[j + 1] = key;
+                i++;
+                state = 'prepare';
+                renderArray(i, j);
+            }
+        }
+
+        function generateArray() {
+            const count = parseInt(countInput.value, 10);
+            if (Number.isNaN(count) || count < 2 || count > 20) {
+                alert('請輸入 2~20 之間的元素數量。');
+                return;
+            }
+            array = randomArray(count);
+            resetState();
+            renderArray();
+        }
+
+        generateButton.addEventListener('click', generateArray);
+        nextStepButton.addEventListener('click', insertionSortStep);
+
+        generateArray();
+    </script>
+</body>
+</html>
