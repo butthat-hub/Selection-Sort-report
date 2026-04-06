@@ -2,56 +2,88 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>排序報告 - 索引導覽</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>排序報告</title>
   <style>
-    :root {
-      --bg: #030712; --card: #111827; --primary: #3b82f6;
-      --text: #f9fafb; --text-muted: #9ca3af; --border: #374151;
+    /* 貼近截圖的極簡深色風格 */
+    body {
+      background-color: #0d1117; /* 深色背景 */
+      color: #c9d1d9; /* 淺灰文字 */
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
     }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .container { width: 100%; max-width: 800px; padding: 40px; }
-    header { border-bottom: 1px solid var(--border); margin-bottom: 30px; padding-bottom: 20px; }
-    h1 { font-size: 2.5rem; margin: 0; }
-    .user-info { color: var(--text-muted); margin-top: 10px; display: flex; gap: 20px; }
-    
-    .nav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
-    .nav-item { 
-      background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; 
-      text-decoration: none; color: inherit; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between;
+
+    h1 {
+      color: #ffffff;
+      font-size: 2rem;
+      margin-bottom: 20px;
     }
-    .nav-item:hover { border-color: var(--primary); transform: translateY(-3px); background: #1f2937; }
-    .nav-item h3 { margin: 0; font-size: 1.1rem; }
-    .nav-item .arrow { color: var(--primary); font-weight: bold; }
-    
-    .section-label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 10px; }
+
+    .intro {
+      margin-bottom: 30px;
+      font-size: 1rem;
+    }
+
+    .intro a {
+      color: #58a6ff; /* 連結藍色 */
+      text-decoration: none;
+    }
+
+    .intro a:hover {
+      text-decoration: underline;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* 模擬截圖中的橫線分隔效果 */
+    .nav-list li {
+      border-top: 1px solid #30363d;
+      padding: 20px 0;
+    }
+
+    /* 確保最後一項也有底線，與截圖一致 */
+    .nav-list li:last-child {
+      border-bottom: 1px solid #30363d;
+    }
+
+    .nav-list a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.3rem;
+      font-weight: bold;
+      display: block; /* 讓整個區塊都可以點擊 */
+      transition: color 0.2s;
+    }
+
+    .nav-list a:hover {
+      color: #58a6ff;
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <header>
-    <h1>排序報告</h1>
-    <div class="user-info">
-      <span>學號：XXXXXXX</span>
-      <span>姓名：Jia-Yin</span>
-    </div>
-  </header>
+  <h1>排序報告</h1>
 
-  <div class="section-label">演算法視覺化</div>
-  <div class="nav-grid">
-    <a href="bubble.html" class="nav-item"><h3>氣泡排序法 (Bubble Sort)</h3><span class="arrow">→</span></a>
-    <a href="selection.html" class="nav-item"><h3>選擇排序法 (Selection Sort)</h3><span class="arrow">→</span></a>
-    <a href="insertion.html" class="nav-item"><h3>插入排序法 (Insertion Sort)</h3><span class="arrow">→</span></a>
-    <a href="merge.html" class="nav-item"><h3>合併排序法 (Merge Sort)</h3><span class="arrow">→</span></a>
-    <a href="quick.html" class="nav-item"><h3>快速排序法 (Quick Sort)</h3><span class="arrow">→</span></a>
+  <div class="intro">
+    <p>模擬頁面: <a href="#">https://[您的帳號].github.io/sort_report/</a></p>
+    <p>報告內容應包括以下各節，簡述原理、複雜度分析與模擬實作內容。</p>
   </div>
 
-  <div class="section-label">總結與心得</div>
-  <div class="nav-grid">
-    <a href="comparison.html" class="nav-item"><h3>綜合比較分析</h3><span class="arrow">→</span></a>
-    <a href="reflection.html" class="nav-item"><h3>學習心得</h3><span class="arrow">→</span></a>
-  </div>
-</div>
+  <ul class="nav-list">
+    <li><a href="bubble-sort.html">氣泡排序法</a></li>
+    <li><a href="selection-sort.html">選擇排序法</a></li>
+    <li><a href="insertion-sort.html">插入排序法</a></li>
+    <li><a href="merge.html">合併排序法</a></li>
+    <li><a href="quick.html">快速排序法</a></li> <li><a href="comparison.html">綜合比較</a></li>
+    <li><a href="reflection.html">學習心得</a></li>
+  </ul>
 
 </body>
 </html>
