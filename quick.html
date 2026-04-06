@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Quick Sort 快速排序法視覺化</title>
+  <style>
+    :root {
+      --bg: #030712; --card: #111827; --primary: #fb7185; /* 鮮紅色 */
+      --accent: #6366f1; --text: #f9fafb; --border: #374151;
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
+    .dashboard { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 20px; }
+    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; }
+    .viz-container { height: 260px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); }
+    .bar { width: 35px; background: var(--accent); border-radius: 4px; position: relative; transition: 0.3s; }
+    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; }
+    .bar.pivot { background: #f59e0b; outline: 2px solid #f59e0b; outline-offset: 2px; } /* 基準點 */
+    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; }
+  </style>
+</head>
+<body>
+<h1>⚡ 快速排序法 Quick Sort</h1>
+<div class="dashboard">
+  <main>
+    <div class="card">
+      <h2>模擬實作操作台</h2>
+      <div class="viz-container" id="viz"></div>
+      <div class="status-msg">快速排序透過 Pivot (基準點) 將陣列切分為兩半，效率極高。</div>
+    </div>
+    <div class="card">
+      <h2>簡述原理</h2>
+      <p>挑選一個元素作為 <strong>Pivot (基準點)</strong>，重新排列陣列，使所有小於 Pivot 的元素都在其左側，大於的都在右側。這一步稱為 Partition (分割)。接著遞迴地對左右兩個子陣列重複此過程。</p>
+    </div>
+  </main>
+  <aside>
+    <div class="card">
+      <h2>複雜度分析</h2>
+      <table style="width:100%; border-collapse: collapse; color: #9ca3af;">
+        <tr><th align="left">平均時間</th><td style="color:#10b981">O(n log n)</td></tr>
+        <tr><th align="left">最壞時間</th><td style="color:#ef4444">O(n²)</td></tr>
+        <tr><th align="left">空間複雜度</th><td style="color:#10b981">O(log n)</td></tr>
+      </table>
+    </div>
+  </aside>
+</div>
+<script>
+  let data = [10, 80, 30, 90, 40, 50, 70];
+  function render() {
+    const viz = document.getElementById('viz');
+    viz.innerHTML = '';
+    const max = Math.max(...data);
+    data.forEach((val, i) => {
+      const bar = document.createElement('div');
+      bar.className = 'bar' + (i === 6 ? ' pivot' : ''); // 假設最後一個是 pivot
+      bar.style.height = `${(val/max)*200}px`;
+      bar.setAttribute('data-value', val);
+      viz.appendChild(bar);
+    });
+  }
+  window.onload = render;
+</script>
+</body>
+</html>

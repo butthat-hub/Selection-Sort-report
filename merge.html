@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Merge Sort 合併排序法視覺化</title>
+  <style>
+    :root {
+      --bg: #030712; --card: #111827; --primary: #0ea5e9; /* 天藍色 */
+      --accent: #6366f1; --text: #f9fafb; --text-muted: #9ca3af; --border: #374151;
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
+    .dashboard { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); margin-bottom: 20px; }
+    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; }
+    .viz-container { height: 260px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+    .bar { width: 35px; background: var(--accent); border-radius: 4px; position: relative; transition: all 0.3s; }
+    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; }
+    .bar.active { background: #f43f5e; } /* 正在處理的子陣列範圍 */
+    .bar.sorted { background: #10b981; }
+    .status-msg { padding: 14px; background: #1f2937; border-left: 4px solid var(--primary); border-radius: 6px; font-size: 0.95rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: var(--text-muted); }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; }
+  </style>
+</head>
+<body>
+<h1>🧬 合併排序法 Merge Sort</h1>
+<div class="dashboard">
+  <main>
+    <div class="card">
+      <h2>模擬實作操作台</h2>
+      <div class="viz-container" id="viz"></div>
+      <div class="status-msg" id="msg">準備就緒</div>
+    </div>
+    <div class="card">
+      <h2>簡述原理</h2>
+      <p>合併排序採用<strong>分而治之</strong>策略。首先將陣列遞迴地切分成兩半，直到每個子陣列只剩一個元素（此時自然已排序）。接著執行「合併」動作：將兩個已排序的子陣列合併成一個更大的、已排序的陣列，直到合併回原始長度。</p>
+    </div>
+  </main>
+  <aside>
+    <div class="card">
+      <h2>複雜度分析</h2>
+      <table>
+        <tr><th>情況</th><th>時間複雜度</th></tr>
+        <tr><td>最佳 / 最壞</td><td style="color:#10b981">O(n log n)</td></tr>
+        <tr><td>空間複雜度</td><td style="color:#ef4444">O(n)</td></tr>
+        <tr><td>穩定性</td><td style="color:#10b981">穩定</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>核心邏輯 (C++)</h2>
+      <pre>
+void mergeSort(int a[], int l, int r) {
+  if (l < r) {
+    int m = l + (r - l) / 2;
+    mergeSort(a, l, m);
+    mergeSort(a, m + 1, r);
+    merge(a, l, m, r);
+  }
+}</pre>
+    </div>
+  </aside>
+</div>
+<script>
+  let data = [38, 27, 43, 3, 9, 82, 10];
+  const viz = document.getElementById('viz');
+  function render() {
+    viz.innerHTML = '';
+    const max = Math.max(...data);
+    data.forEach(val => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = `${(val/max)*200}px`;
+      bar.setAttribute('data-value', val);
+      viz.appendChild(bar);
+    });
+  }
+  window.onload = render;
+</script>
+</body>
+</html>
