@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>綜合比較 - 排序報告</title>
+  <style>
+    body {
+      background-color: #0d1117;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+
+    .back-link {
+      color: #58a6ff;
+      text-decoration: none;
+      font-size: 1rem;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 2rem;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 15px;
+      margin-bottom: 30px;
+    }
+
+    /* 表格樣式 */
+    .table-container {
+      overflow-x: auto; /* 讓手機螢幕可以左右滑動表格 */
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+    }
+
+    th, td {
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid #30363d;
+    }
+
+    th {
+      background-color: #21262d;
+      color: #ffffff;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* 滑鼠懸停效果與雙數列背景 */
+    tr:hover {
+      background-color: #1f242c;
+    }
+
+    .good { color: #3fb950; font-weight: bold; } /* 綠色：表現好 */
+    .warn { color: #d29922; } /* 黃色：普通 */
+    .bad { color: #f85149; } /* 紅色：表現差 */
+  </style>
+</head>
+<body>
+
+  <a href="index.html" class="back-link">← 回到索引首頁</a>
+
+  <h1>📊 各排序演算法綜合比較</h1>
+
+  <p>以下表格統整了本報告中實作的五種基礎與進階排序演算法，就其時間複雜度、空間複雜度與演算法穩定性進行客觀比較：</p>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>演算法</th>
+          <th>最佳時間複雜度</th>
+          <th>平均時間複雜度</th>
+          <th>最壞時間複雜度</th>
+          <th>空間複雜度</th>
+          <th>穩定性</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="color:#ffffff; font-weight:bold;">氣泡排序 (Bubble)</td>
+          <td class="good">O(n)</td>
+          <td class="bad">O(n²)</td>
+          <td class="bad">O(n²)</td>
+          <td class="good">O(1)</td>
+          <td class="good">穩定</td>
+        </tr>
+        <tr>
+          <td style="color:#ffffff; font-weight:bold;">選擇排序 (Selection)</td>
+          <td class="bad">O(n²)</td>
+          <td class="bad">O(n²)</td>
+          <td class="bad">O(n²)</td>
+          <td class="good">O(1)</td>
+          <td class="bad">不穩定</td>
+        </tr>
+        <tr>
+          <td style="color:#ffffff; font-weight:bold;">插入排序 (Insertion)</td>
+          <td class="good">O(n)</td>
+          <td class="bad">O(n²)</td>
+          <td class="bad">O(n²)</td>
+          <td class="good">O(1)</td>
+          <td class="good">穩定</td>
+        </tr>
+        <tr>
+          <td style="color:#ffffff; font-weight:bold;">合併排序 (Merge)</td>
+          <td class="good">O(n log n)</td>
+          <td class="good">O(n log n)</td>
+          <td class="good">O(n log n)</td>
+          <td class="bad">O(n)</td>
+          <td class="good">穩定</td>
+        </tr>
+        <tr>
+          <td style="color:#ffffff; font-weight:bold;">快速排序 (Quick)</td>
+          <td class="good">O(n log n)</td>
+          <td class="good">O(n log n)</td>
+          <td class="bad">O(n²)</td>
+          <td class="warn">O(log n)</td>
+          <td class="bad">不穩定</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>
