@@ -1,170 +1,208 @@
 <!DOCTYPE html>
-<html lang="zh-tw">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>插入排序法演示</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .array {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-        .element {
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            text-align: center;
-            margin: 0 5px 5px 0;
-            border: 1px solid #333;
-            border-radius: 5px;
-            background-color: #f0f0f0;
-        }
-        .highlight-key {
-            background-color: #ffcccb;
-        }
-        .highlight-compare {
-            background-color: #ffe58f;
-        }
-        .sorted {
-            background-color: #d4edda;
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        input[type=number] {
-            width: 80px;
-            padding: 8px;
-            font-size: 16px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Insertion Sort 插入排序法視覺化</title>
+  <style>
+    :root {
+      --bg: #030712; --card: #111827; --primary: #10b981; /* 翡翠綠 */
+      --accent: #3b82f6; --text: #f9fafb; --text-muted: #9ca3af; --border: #374151;
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; letter-spacing: 1px; }
+    
+    .dashboard { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
+    @media (max-width: 800px) { .dashboard { grid-template-columns: 1fr; } }
+    
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); margin-bottom: 20px; }
+    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; display: flex; align-items: center; gap: 8px; }
+    
+    /* 視覺化區域 */
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+    .btn-run { background: var(--primary); color: #000; }
+    .btn-step { background: var(--border); color: white; }
+    input { background: #1f2937; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; width: 200px; }
+    
+    .viz-container { height: 260px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+    .bar { width: 40px; background: var(--accent); border-radius: 4px 4px 0 0; position: relative; transition: all 0.3s ease; }
+    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.85rem; }
+    .bar.sorted { background: #059669; }
+    .bar.is-key { background: #f59e0b; transform: translateY(-15px); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4); z-index: 10; } /* 突顯拿起的牌 */
+    .bar.shifting { opacity: 0.5; }
+    
+    .status-msg { padding: 14px; background: #1f2937; border-left: 4px solid var(--primary); border-radius: 6px; font-size: 0.95rem; }
+    
+    /* 統計與資訊區 */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .stat-item { background: #1f2937; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+    
+    .info-text p { color: var(--text-muted); font-size: 0.95rem; }
+    .info-text strong { color: #e5e7eb; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: var(--text-muted); }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: #e5e7eb; }
+    .good { color: var(--primary); } .bad { color: #ef4444; }
+    
+    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; line-height: 1.5; }
+  </style>
 </head>
 <body>
-    <h1>插入排序法演示</h1>
-    <p>設定元素數量，然後按「生成陣列」開始。按「下一步」查看排序過程。</p>
 
-    <div class="controls">
-        <label for="count">元素數量：</label>
-        <input id="count" type="number" min="2" max="20" value="7" />
-        <button id="generate">生成陣列</button>
-        <button id="next-step" disabled>下一步</button>
+<h1>🃏 插入排序法 Insertion Sort</h1>
+
+<div class="dashboard">
+  <main>
+    <div class="card">
+      <h2>模擬實作操作台</h2>
+      <div class="controls">
+        <label style="color:var(--text-muted);font-size:0.9rem;">輸入陣列：</label>
+        <input type="text" id="nums" value="45, 12, 89, 33, 27, 50">
+        <button class="btn-run" onclick="startPlay()">▶ 自動排序</button>
+        <button class="btn-step" onclick="takeStep()">⏭ 單步觀察</button>
+        <button class="btn-step" onclick="reset()">🔄 重置</button>
+      </div>
+      <div class="viz-container" id="viz"></div>
+      <div class="status-msg" id="msg">請點擊「自動排序」或「單步觀察」開始。</div>
     </div>
 
-    <div id="array-container" class="array"></div>
+    <div class="card info-text">
+      <h2>簡述原理</h2>
+      <p>插入排序的邏輯就像是在<strong>打撲克牌時整理手牌</strong>：</p>
+      <p>我們會將陣列分為「已排序」與「未排序」兩個部分。每次從未排序的部分中抽出第一個元素（我們稱之為 Key），由右至左與已排序的元素進行比較。如果已排序的元素比 Key 大，就把該元素往右移一格，直到找到適合的位置將 Key 插入。</p>
+    </div>
+  </main>
 
-    <script>
-        let array = [];
-        let i = 1;
-        let j = 0;
-        let key = null;
-        let state = 'prepare'; // prepare, shifting, place
+  <aside>
+    <div class="card">
+      <h2>執行統計</h2>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-value" id="c-cmp">0</div><div>比較次數</div></div>
+        <div class="stat-item"><div class="stat-value" id="c-shf">0</div><div>移動/寫入</div></div>
+      </div>
+    </div>
 
-        const container = document.getElementById('array-container');
-        const nextStepButton = document.getElementById('next-step');
-        const generateButton = document.getElementById('generate');
-        const countInput = document.getElementById('count');
+    <div class="card">
+      <h2>複雜度分析</h2>
+      <table>
+        <tr><th>情況</th><th>時間複雜度</th></tr>
+        <tr><td>最佳 (已排序)</td><td class="good">O(n)</td></tr>
+        <tr><td>平均 / 最壞</td><td class="bad">O(n²)</td></tr>
+        <tr><th>空間複雜度</th><td class="good">O(1)</td></tr>
+        <tr><th>穩定性</th><td class="good">穩定</td></tr>
+      </table>
+    </div>
 
-        function randomArray(count) {
-            const result = [];
-            for (let k = 0; k < count; k++) {
-                result.push(Math.floor(Math.random() * 90) + 10);
-            }
-            return result;
-        }
+    <div class="card">
+      <h2>演算法邏輯 (虛擬碼)</h2>
+      <pre>
+for i from 1 to n-1:
+  key = arr[i]
+  j = i - 1
+  while j >= 0 and arr[j] > key:
+    arr[j + 1] = arr[j]  // 右移
+    j = j - 1
+  arr[j + 1] = key       // 插入</pre>
+    </div>
+  </aside>
+</div>
 
-        function renderArray(highlightKey = -1, highlightCompare = -1) {
-            container.innerHTML = '';
-            array.forEach((value, idx) => {
-                const element = document.createElement('div');
-                element.className = 'element';
-                element.textContent = value;
+<script>
+  let data = [], steps = [], currentStep = 0, timer = null;
+  const viz = document.getElementById('viz');
 
-                if (idx < i) {
-                    element.classList.add('sorted');
-                }
-                if (idx === highlightKey) {
-                    element.classList.add('highlight-key');
-                }
-                if (idx === highlightCompare) {
-                    element.classList.add('highlight-compare');
-                }
-                container.appendChild(element);
-            });
-        }
+  function reset() {
+    clearTimeout(timer);
+    data = document.getElementById('nums').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    if(data.length === 0) data = [45, 12, 89, 33, 27, 50];
+    steps = genSteps([...data]);
+    currentStep = 0;
+    render();
+    document.getElementById('msg').innerText = "陣列已重置，準備排序。";
+    document.getElementById('c-cmp').innerText = '0';
+    document.getElementById('c-shf').innerText = '0';
+  }
 
-        function resetState() {
-            i = 1;
-            j = 0;
-            key = null;
-            state = 'prepare';
-            nextStepButton.disabled = false;
-        }
-
-        function insertionSortStep() {
-            if (i >= array.length) {
-                renderArray();
-                nextStepButton.disabled = true;
-                alert('排序完成！');
-                return;
-            }
-
-            if (state === 'prepare') {
-                key = array[i];
-                j = i - 1;
-                state = 'shifting';
-                renderArray(i, j);
-                return;
-            }
-
-            if (state === 'shifting') {
-                if (j >= 0 && array[j] > key) {
-                    array[j + 1] = array[j];
-                    j--;
-                    renderArray(i, j);
-                } else {
-                    state = 'place';
-                }
-                return;
-            }
-
-            if (state === 'place') {
-                array[j + 1] = key;
-                i++;
-                state = 'prepare';
-                renderArray(i, j);
+  function genSteps(arr) {
+    let s = [], n = arr.length, cmp = 0, shf = 0;
+    for (let i = 1; i < n; i++) {
+        let key = arr[i];
+        let j = i - 1;
+        s.push({ type: 'pick', i, j, key, arr: [...arr], cmp, shf });
+        while (j >= 0) {
+            cmp++;
+            s.push({ type: 'compare', i, j, key, arr: [...arr], cmp, shf });
+            if (arr[j] > key) {
+                arr[j + 1] = arr[j];
+                shf++;
+                s.push({ type: 'shift', i, j, key, arr: [...arr], cmp, shf });
+                j--;
+            } else {
+                break;
             }
         }
+        arr[j + 1] = key;
+        shf++;
+        s.push({ type: 'insert', i, j: j + 1, key, arr: [...arr], cmp, shf });
+    }
+    s.push({ type: 'done', arr: [...arr], cmp, shf });
+    return s;
+  }
 
-        function generateArray() {
-            const count = parseInt(countInput.value, 10);
-            if (Number.isNaN(count) || count < 2 || count > 20) {
-                alert('請輸入 2~20 之間的元素數量。');
-                return;
-            }
-            array = randomArray(count);
-            resetState();
-            renderArray();
+  function render(step) {
+    const arr = step ? step.arr : data;
+    viz.innerHTML = '';
+    const max = Math.max(...arr, 1);
+    arr.forEach((val, idx) => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = `${(val/max) * 200}px`;
+      bar.setAttribute('data-value', val);
+      
+      if(step) {
+        if(step.type === 'done') { bar.classList.add('sorted'); }
+        else {
+          if(idx < step.i && step.type !== 'done') bar.classList.add('sorted');
+          if(step.type === 'pick' && idx === step.i) bar.classList.add('is-key');
+          if(step.type === 'compare' && idx === step.j) bar.style.background = '#f43f5e';
+          if(step.type === 'shift' && idx === step.j + 1) bar.classList.add('shifting');
+          if((step.type === 'compare' || step.type === 'shift') && idx === step.i && val === step.key) bar.classList.add('is-key'); 
         }
+      }
+      viz.appendChild(bar);
+    });
+  }
 
-        generateButton.addEventListener('click', generateArray);
-        nextStepButton.addEventListener('click', insertionSortStep);
+  function takeStep() {
+    if(currentStep >= steps.length) return;
+    const s = steps[currentStep++];
+    render(s);
+    document.getElementById('c-cmp').innerText = s.cmp || 0;
+    document.getElementById('c-shf').innerText = s.shf || 0;
+    updateMsg(s);
+  }
 
-        generateArray();
-    </script>
+  function updateMsg(s) {
+    const m = document.getElementById('msg');
+    if(s.type === 'pick') m.innerHTML = `抽出數值 <strong>${s.key}</strong>，準備往左尋找插入位置。`;
+    if(s.type === 'compare') m.innerHTML = `比較 <strong>${s.key}</strong> 是否小於 ${s.arr[s.j]}。`;
+    if(s.type === 'shift') m.innerHTML = `${s.arr[s.j]} 較大，將其向右移動一格。`;
+    if(s.type === 'insert') m.innerHTML = `找到正確位置，將 <strong>${s.key}</strong> 插入。`;
+    if(s.type === 'done') m.innerHTML = "🎉 排序完成！";
+  }
+
+  function startPlay() {
+    if(currentStep >= steps.length) reset();
+    clearTimeout(timer);
+    timer = setInterval(() => {
+      if(currentStep >= steps.length) clearInterval(timer);
+      else takeStep();
+    }, 600);
+  }
+
+  window.onload = reset;
+</script>
 </body>
 </html>
