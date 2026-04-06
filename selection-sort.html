@@ -2,53 +2,79 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>Selection Sort 視覺化實作</title>
+  <title>Selection Sort 選擇排序法視覺化</title>
   <style>
     :root {
-      --bg: #030712; --card: #111827; --primary: #6366f1; --accent: #10b981;
-      --text: #f9fafb; --border: #374151;
+      --bg: #030712; --card: #111827; --primary: #8b5cf6; /* 紫羅蘭 */
+      --accent: #6366f1; --text: #f9fafb; --text-muted: #9ca3af; --border: #374151;
     }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-    .dashboard { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
-    h2 { color: var(--primary); font-size: 1.1rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; letter-spacing: 1px; }
+    
+    .dashboard { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
+    @media (max-width: 800px) { .dashboard { grid-template-columns: 1fr; } }
+    
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); margin-bottom: 20px; }
+    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; display: flex; align-items: center; gap: 8px; }
+    
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+    .btn-run { background: var(--primary); color: #fff; }
+    .btn-step { background: var(--border); color: white; }
+    input { background: #1f2937; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; width: 200px; }
     
     /* 視覺化區域 */
-    .viz-container { height: 250px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); }
-    .bar { width: 35px; background: var(--primary); border-radius: 4px 4px 0 0; position: relative; transition: all 0.3s ease; }
-    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; }
-    .bar.comparing { background: #f59e0b; transform: scaleX(1.1); }
-    .bar.is-min { background: #ec4899; }
-    .bar.sorted { background: var(--accent); opacity: 0.8; }
-
-    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
-    .btn-run { background: var(--primary); color: white; }
-    .btn-step { background: var(--border); color: white; }
-    input { background: #1f2937; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; }
+    .viz-container { height: 260px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+    .bar { width: 40px; background: var(--accent); border-radius: 4px 4px 0 0; position: relative; transition: height 0.3s, background 0.2s, transform 0.2s; }
+    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.85rem; }
     
-    .status-msg { padding: 12px; background: #1f2937; border-radius: 8px; font-size: 0.9rem; min-height: 1.2rem; }
-    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-    .stat-item { background: #1f2937; padding: 10px; border-radius: 8px; text-align: center; }
-    .stat-value { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+    /* 選擇排序的專屬視覺狀態 */
+    .bar.sorted { background: #8b5cf6; opacity: 0.7; }
+    .bar.comparing { background: #eab308; transform: scale(1.05); } /* 正在掃描檢查的元素：黃色 */
+    .bar.is-min { background: #ec4899; box-shadow: 0 0 10px rgba(236, 72, 153, 0.6); } /* 目前找到的最小值：粉紅發亮 */
+    .bar.swapping { background: #10b981; } /* 交換時的顏色：綠色 */
     
-    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; }
+    .status-msg { padding: 14px; background: #1f2937; border-left: 4px solid var(--primary); border-radius: 6px; font-size: 0.95rem; min-height: 1.5rem; }
+    
+    /* 統計與資訊區 */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .stat-item { background: #1f2937; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+    
+    .info-text p { color: var(--text-muted); font-size: 0.95rem; }
+    .info-text strong { color: #e5e7eb; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: var(--text-muted); }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: #e5e7eb; }
+    .avg { color: #eab308; } .bad { color: #ef4444; } .good { color: #10b981; }
+    
+    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; line-height: 1.5; }
   </style>
 </head>
 <body>
 
+<h1>🎯 選擇排序法 Selection Sort</h1>
+
 <div class="dashboard">
   <main>
     <div class="card">
-      <h2>Selection Sort 視覺化控制台</h2>
+      <h2>模擬實作操作台</h2>
       <div class="controls">
-        <input type="text" id="nums" value="45, 12, 89, 33, 27, 50">
-        <button class="btn-run" onclick="startPlay()">▶ 自動執行</button>
-        <button class="btn-step" onclick="takeStep()">⏭ 單步</button>
+        <label style="color:var(--text-muted);font-size:0.9rem;">輸入陣列：</label>
+        <input type="text" id="nums" value="29, 10, 14, 37, 13, 25, 8">
+        <button class="btn-run" onclick="startPlay()">▶ 自動排序</button>
+        <button class="btn-step" onclick="takeStep()">⏭ 單步觀察</button>
         <button class="btn-step" onclick="reset()">🔄 重置</button>
       </div>
       <div class="viz-container" id="viz"></div>
-      <div class="status-msg" id="msg">準備就緒</div>
+      <div class="status-msg" id="msg">請點擊「自動排序」或「單步觀察」開始。</div>
+    </div>
+
+    <div class="card info-text">
+      <h2>簡述原理</h2>
+      <p>選擇排序法的邏輯非常直觀，就像是在一堆數字中「挑選」出最小的：</p>
+      <p>將陣列分為「已排序」與「未排序」兩個部分。每一輪都會從「未排序」的範圍中，完整掃描一遍以<strong>找出最小值</strong>。找到最小值後，將它與未排序範圍的<strong>第一個元素交換位置</strong>。這樣一來，最小值就被納入了已排序的範圍。重複此動作直到全部排完。</p>
     </div>
   </main>
 
@@ -56,19 +82,34 @@
     <div class="card">
       <h2>執行統計</h2>
       <div class="stats-grid">
-        <div class="stat-item"><div class="stat-value" id="c-cmp">0</div><div>比較</div></div>
-        <div class="stat-item"><div class="stat-value" id="c-swp">0</div><div>交換</div></div>
+        <div class="stat-item"><div class="stat-value" id="c-cmp">0</div><div>比較次數</div></div>
+        <div class="stat-item"><div class="stat-value" id="c-swp">0</div><div>交換次數</div></div>
       </div>
     </div>
-    <div class="card" style="margin-top:20px;">
-      <h2>演算法邏輯</h2>
+
+    <div class="card">
+      <h2>複雜度分析</h2>
+      <table>
+        <tr><th>情況</th><th>時間複雜度</th></tr>
+        <tr><td>最佳情況</td><td class="bad">O(n²)</td></tr>
+        <tr><td>平均 / 最壞</td><td class="bad">O(n²)</td></tr>
+        <tr><th>空間複雜度</th><td class="good">O(1)</td></tr>
+        <tr><th>穩定性</th><td class="avg">不穩定</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>演算法邏輯 (虛擬碼)</h2>
       <pre>
 for i from 0 to n-1:
-  min = i
+  min_idx = i
+  // 在未排序區塊尋找最小值
   for j from i+1 to n:
-    if arr[j] < arr[min]:
-      min = j
-  swap(arr[i], arr[min])</pre>
+    if arr[j] < arr[min_idx]:
+      min_idx = j
+      
+  // 將最小值與未排序的首個元素交換
+  swap(arr[i], arr[min_idx])</pre>
     </div>
   </aside>
 </div>
@@ -79,46 +120,70 @@ for i from 0 to n-1:
 
   function reset() {
     clearTimeout(timer);
-    data = document.getElementById('nums').value.split(',').map(n => parseInt(n.trim()));
+    data = document.getElementById('nums').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    if(data.length === 0) data = [29, 10, 14, 37, 13, 25, 8];
     steps = genSteps([...data]);
     currentStep = 0;
     render();
-    document.getElementById('msg').innerText = "已重置資料";
+    document.getElementById('msg').innerText = "陣列已重置，準備排序。";
+    document.getElementById('c-cmp').innerText = '0';
+    document.getElementById('c-swp').innerText = '0';
   }
 
   function genSteps(arr) {
     let s = [], n = arr.length, cmp = 0, swp = 0;
-    for(let i=0; i<n-1; i++) {
-      let min = i;
-      s.push({ type: 'start-pass', i, min, arr: [...arr] });
-      for(let j=i+1; j<n; j++) {
-        cmp++;
-        s.push({ type: 'scan', i, j, min, arr: [...arr], cmp, swp });
-        if(arr[j] < arr[min]) {
-          min = j;
-          s.push({ type: 'new-min', i, j, min, arr: [...arr], cmp, swp });
+    for (let i = 0; i < n - 1; i++) {
+        let minIdx = i;
+        s.push({ type: 'start-pass', i, minIdx, arr: [...arr], cmp, swp });
+        
+        for (let j = i + 1; j < n; j++) {
+            cmp++;
+            s.push({ type: 'scan', i, j, minIdx, arr: [...arr], cmp, swp });
+            if (arr[j] < arr[minIdx]) {
+                minIdx = j;
+                s.push({ type: 'new-min', i, j, minIdx, arr: [...arr], cmp, swp });
+            }
         }
-      }
-      if(min !== i) { [arr[i], arr[min]] = [arr[min], arr[i]]; swp++; }
-      s.push({ type: 'swap', i, min, arr: [...arr], cmp, swp });
+        
+        if (minIdx !== i) {
+            [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+            swp++;
+        }
+        s.push({ type: 'swap', i, minIdx, arr: [...arr], cmp, swp });
     }
-    s.push({ type: 'done', arr: [...arr] });
+    s.push({ type: 'done', arr: [...arr], cmp, swp });
     return s;
   }
 
   function render(step) {
     const arr = step ? step.arr : data;
     viz.innerHTML = '';
-    const max = Math.max(...arr);
+    const max = Math.max(...arr, 1);
+    
     arr.forEach((val, idx) => {
       const bar = document.createElement('div');
       bar.className = 'bar';
       bar.style.height = `${(val/max) * 200}px`;
       bar.setAttribute('data-value', val);
+      
       if(step) {
-        if(idx < step.i || step.type === 'done') bar.classList.add('sorted');
-        if(idx === step.j) bar.classList.add('comparing');
-        if(idx === step.min) bar.classList.add('is-min');
+        if(step.type === 'done') { bar.classList.add('sorted'); }
+        else {
+          // 已排序好的區塊 (左側)
+          if(idx < step.i && step.type !== 'done') bar.classList.add('sorted');
+          
+          // 目前被標記為最小值的元素 (粉紅色)
+          if(idx === step.minIdx && step.type !== 'swap') bar.classList.add('is-min');
+          
+          // 正在掃描比較的元素 (黃色)
+          if(step.type === 'scan' && idx === step.j) bar.classList.add('comparing');
+          
+          // 發生新的最小值替換時 (強調黃色與粉紅)
+          if(step.type === 'new-min' && idx === step.j) bar.classList.add('is-min');
+          
+          // 交換時的特效 (綠色)
+          if(step.type === 'swap' && (idx === step.i || idx === step.minIdx)) bar.classList.add('swapping');
+        }
       }
       viz.appendChild(bar);
     });
@@ -128,25 +193,30 @@ for i from 0 to n-1:
     if(currentStep >= steps.length) return;
     const s = steps[currentStep++];
     render(s);
-    if(s.cmp) document.getElementById('c-cmp').innerText = s.cmp;
-    if(s.swp) document.getElementById('c-swp').innerText = s.swp;
+    document.getElementById('c-cmp').innerText = s.cmp || 0;
+    document.getElementById('c-swp').innerText = s.swp || 0;
     updateMsg(s);
   }
 
   function updateMsg(s) {
     const m = document.getElementById('msg');
-    if(s.type === 'scan') m.innerText = `正在檢查索引 ${s.j} 是否比目前的最小值 ${s.arr[s.min]} 更小`;
-    if(s.type === 'new-min') m.innerHTML = `✨ 發現更小值！更新最小值索引為 ${s.min} (數值: ${s.arr[s.min]})`;
-    if(s.type === 'swap') m.innerText = s.i === s.min ? `第 ${s.i} 位已是最小，無需交換` : `交換索引 ${s.i} 與最小值索引 ${s.min}`;
-    if(s.type === 'done') m.innerText = "🎉 排序完成！";
+    if(s.type === 'start-pass') m.innerHTML = `🔄 第 ${s.i + 1} 輪開始：預設未排序首位 <strong>${s.arr[s.i]}</strong> 為最小值。`;
+    if(s.type === 'scan') m.innerHTML = `🔍 掃描比較：檢查 <strong>${s.arr[s.j]}</strong> 是否小於目前的最小值 <strong>${s.arr[s.minIdx]}</strong>。`;
+    if(s.type === 'new-min') m.innerHTML = `✨ 找到更小的值！更新最小值為 <strong>${s.arr[s.minIdx]}</strong>。`;
+    if(s.type === 'swap') {
+        if(s.i === s.minIdx) m.innerHTML = `✔️ <strong>${s.arr[s.i]}</strong> 已經是這輪的最小值，不需交換。`;
+        else m.innerHTML = `🔄 將找到的最小值 <strong>${s.arr[s.i]}</strong> 與未排序首位 <strong>${s.arr[s.minIdx]}</strong> 交換。`;
+    }
+    if(s.type === 'done') m.innerHTML = "🎉 排序完成！";
   }
 
   function startPlay() {
     if(currentStep >= steps.length) reset();
+    clearTimeout(timer);
     timer = setInterval(() => {
       if(currentStep >= steps.length) clearInterval(timer);
       else takeStep();
-    }, 400);
+    }, 450); // 選擇排序速度適中
   }
 
   window.onload = reset;
