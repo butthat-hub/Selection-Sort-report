@@ -1,43 +1,572 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-    <meta charset="UTF-8">
-    <title>氣泡排序法演示 - 排序報告</title>
-    <link rel="stylesheet" href="style.css"> </head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>氣泡排序法 Bubble Sort 視覺化教學</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e3a5f, #0ea5e9);
+      padding: 28px 40px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    header h1 {
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+
+    header p {
+      margin-top: 6px;
+      color: #bae6fd;
+      font-size: 0.95rem;
+    }
+
+    .home-link {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 14px;
+      border: 1px solid rgba(186, 230, 253, 0.7);
+      border-radius: 999px;
+      color: #e0f2fe;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: background .2s, color .2s;
+    }
+
+    .home-link:hover {
+      background: #e0f2fe;
+      color: #0f172a;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    /* ── 卡片 ── */
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      color: #38bdf8;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h2::before {
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 20px;
+      background: #0ea5e9;
+      border-radius: 3px;
+    }
+
+    /* ── 原理說明 ── */
+    .principle p {
+      line-height: 1.9;
+      color: #cbd5e1;
+      margin-bottom: 10px;
+    }
+
+    .highlight {
+      color: #fbbf24;
+      font-weight: bold;
+    }
+
+    /* ── 複雜度表格 ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+    }
+
+    th,
+    td {
+      padding: 11px 16px;
+      text-align: center;
+      border: 1px solid #334155;
+      font-size: 0.93rem;
+    }
+
+    th {
+      background: #0f172a;
+      color: #38bdf8;
+    }
+
+    tr:hover td {
+      background: #263550;
+    }
+
+    .best {
+      color: #4ade80;
+    }
+
+    .avg {
+      color: #fbbf24;
+    }
+
+    .worst {
+      color: #f87171;
+    }
+
+    /* ── 控制區 ── */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    input[type=text] {
+      padding: 8px 12px;
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    input[type=range] {
+      accent-color: #0ea5e9;
+    }
+
+    button {
+      padding: 9px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+
+    button:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: #0ea5e9;
+      color: #fff;
+    }
+
+    .btn-success {
+      background: #22c55e;
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: #f59e0b;
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── 視覺化區 ── */
+    #viz-area {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 6px;
+      height: 260px;
+      padding: 10px 0 0;
+      overflow-x: auto;
+    }
+
+    .bar-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .bar {
+      width: 40px;
+      border-radius: 6px 6px 0 0;
+      transition: height 0.25s ease, background 0.2s;
+      background: #0ea5e9;
+    }
+
+    .bar.comparing {
+      background: #fbbf24;
+    }
+
+    .bar.swapping {
+      background: #f87171;
+    }
+
+    .bar.sorted {
+      background: #4ade80;
+    }
+
+    .bar-label {
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    /* ── 當前步驟訊息 ── */
+    #step-msg {
+      margin-top: 14px;
+      padding: 12px 18px;
+      background: #0f172a;
+      border-left: 4px solid #0ea5e9;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      min-height: 46px;
+      color: #e2e8f0;
+      line-height: 1.7;
+    }
+
+    /* ── 統計 ── */
+    .stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .stat-box {
+      flex: 1;
+      min-width: 120px;
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-box .num {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    .stat-box .lbl {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    /* ── 偽代碼 ── */
+    .pseudo {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 18px 22px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      line-height: 2;
+      color: #cbd5e1;
+      overflow-x: auto;
+    }
+
+    .pseudo .kw {
+      color: #c084fc;
+    }
+
+    .pseudo .fn {
+      color: #38bdf8;
+    }
+
+    .pseudo .cm {
+      color: #4b5563;
+      font-style: italic;
+    }
+
+    .pseudo .hl {
+      background: #1e3a5f;
+      border-radius: 3px;
+      padding: 0 4px;
+    }
+
+    .pseudo .num-line {
+      color: #4b5563;
+      user-select: none;
+      margin-right: 10px;
+    }
+
+    #step-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      line-height: 2;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
 <body>
-    <div class="nav"><a href="index.html">← 返回目錄</a></div>
-    <h1>氣泡排序法 (Bubble Sort)</h1>
-    
-    <section class="section">
-        <h2>1. 演算法原理</h2>
-        <p>從第一個元素開始，比較相鄰的兩個元素，如果前一個比後一個大則交換，重複此動作直到最後。每一輪都會將目前未排序中最大的數移到正確位置。</p>
-    </section>
 
-    <section class="section">
-        <h2>2. 演示過程 (範例數列: [5, 3, 8, 2])</h2>
-        <div class="demo-step">
-            <p><strong>第一輪：</strong></p>
-            <ul>
-                <li>[5, 3, 8, 2] → 比較 5, 3 (5 > 3，交換) → [3, 5, 8, 2]</li>
-                <li>[3, 5, 8, 2] → 比較 5, 8 (不交換)</li>
-                <li>[3, 5, 8, 2] → 比較 8, 2 (8 > 2，交換) → [3, 5, 2, <strong>8</strong>]</li>
-            </ul>
-            <p><strong>第二輪：</strong></p>
-            <ul>
-                <li>[3, 5, 2, 8] → 比較 3, 5 (不交換)</li>
-                <li>[3, 5, 2, 8] → 比較 5, 2 (5 > 2，交換) → [3, 2, <strong>5</strong>, 8]</li>
-            </ul>
-            <p><strong>第三輪：</strong></p>
-            <ul>
-                <li>[3, 2, 5, 8] → 比較 3, 2 (3 > 2，交換) → [<strong>2</strong>, <strong>3</strong>, 5, 8] (排序完成)</li>
-            </ul>
+  <header>
+    <h1>🫧 氣泡排序法 Bubble Sort</h1>
+    <p>互動式視覺化教學 — 原理 · 步驟 · 複雜度</p>
+    <a class="home-link" href="index.html">← 回到首頁</a>
+  </header>
+
+  <div class="container">
+
+    <div class="card principle">
+      <h2>一、操作原理</h2>
+      <p>
+        氣泡排序法（Bubble Sort）是一種簡單的比較排序演算法。<br>
+        核心概念：<span class="highlight">重複走訪要排序的數列，一次比較兩個相鄰的元素</span>，如果它們的順序錯誤就交換過來。
+      </p>
+      <p>
+        走訪數列的工作是重複地進行直到沒有再需要交換，也就是該數列已經排序完成。
+        這個演算法的名字由來是因為越小的元素會經由交換慢慢「浮」到數列的頂端（或大元素沉到底部）。
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>二、演算法偽代碼</h2>
+      <div class="pseudo">
+        <span class="kw">for</span> i = 0 <span class="kw">to</span> n-2:
+        <br>&nbsp;&nbsp;swapped = <span class="kw">false</span>
+        <br>&nbsp;&nbsp;<span class="kw">for</span> j = 0 <span class="kw">to</span> n-2-i:
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> arr[j] &gt; arr[j+1]:
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">swap(arr[j], arr[j+1])</span>
+        <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;swapped = <span class="kw">true</span>
+        <br>&nbsp;&nbsp;<span class="kw">if</span> <span class="kw">not</span> swapped: <span class="kw">break</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>三、時間 & 空間複雜度</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>情況</th>
+            <th>時間複雜度</th>
+            <th>說明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>最佳情況</td>
+            <td class="best">O(n)</td>
+            <td>當輸入資料已經是正序時（最佳化版本）</td>
+          </tr>
+          <tr>
+            <td>平均/最壞</td>
+            <td class="worst">O(n²)</td>
+            <td>需要兩層迴圈處理</td>
+          </tr>
+          <tr>
+            <td>空間複雜度</td>
+            <td style="color:#38bdf8">O(1)</td>
+            <td>原地排序，僅需常數級額外空間</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>四、互動視覺化操作</h2>
+
+      <div class="controls">
+        <label>輸入數字：</label>
+        <input type="text" id="input-arr" value="64, 34, 25, 12, 22, 11, 90" style="width:240px;" />
+        <button class="btn-primary" onclick="initSort()">載入 / 重置</button>
+        <button class="btn-warning" id="btn-random" onclick="randomArr()">隨機產生</button>
+      </div>
+      <div class="controls">
+        <label>速度：</label>
+        <input type="range" id="speed" min="100" max="1500" value="700" step="100" style="width:130px;" />
+        <span id="speed-lbl" style="color:#94a3b8;font-size:0.85rem;">700ms</span>
+        <button class="btn-success" id="btn-play" onclick="playSort()">▶ 開始排序</button>
+        <button class="btn-danger" id="btn-stop" onclick="stopSort()" disabled>⏹ 停止</button>
+        <button class="btn-primary" id="btn-step" onclick="stepOnce()">⏭ 單步執行</button>
+      </div>
+
+      <div id="viz-area"></div>
+      <div id="step-msg">請點擊開始觀察氣泡排序過程。</div>
+
+      <div class="stats">
+        <div class="stat-box">
+          <div class="num" id="stat-cmp">0</div>
+          <div class="lbl">比較次數</div>
         </div>
-        
-    </section>
+        <div class="stat-box">
+          <div class="num" id="stat-swp">0</div>
+          <div class="lbl">交換次數</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="stat-pass">0</div>
+          <div class="lbl">已完成輪數</div>
+        </div>
+        <div class="stat-box">
+          <div class="num" id="stat-size">0</div>
+          <div class="lbl">陣列大小 n</div>
+        </div>
+      </div>
+    </div>
 
-    <section class="section">
-        <h2>3. 複雜度分析</h2>
-        <p>時間複雜度：$O(n^2)$，空間複雜度：$O(1)$。</p>
-    </section>
+    <div class="card">
+      <h2>五、步驟記錄</h2>
+      <div id="step-log"></div>
+    </div>
+
+  </div>
+
+  <script>
+    let arr = [], steps = [], stepIdx = 0, playTimer = null;
+    const SCALE = 230;
+    const $ = id => document.getElementById(id);
+
+    function parseInput() {
+      return $('input-arr').value.split(/[,\s]+/).map(v => parseInt(v)).filter(v => !isNaN(v) && v > 0);
+    }
+
+    function randomArr() {
+      const a = Array.from({ length: 8 }, () => Math.floor(Math.random() * 90) + 10);
+      $('input-arr').value = a.join(', ');
+      initSort();
+    }
+
+    function computeSteps(original) {
+      const a = [...original];
+      const n = a.length;
+      const result = [];
+      let cmp = 0, swp = 0;
+
+      for (let i = 0; i < n - 1; i++) {
+        let swapped = false;
+        result.push({ type: 'pass-start', i, arr: [...a] });
+        for (let j = 0; j < n - 1 - i; j++) {
+          cmp++;
+          result.push({ type: 'compare', j, i, arr: [...a], cmp, swp });
+          if (a[j] > a[j + 1]) {
+            [a[j], a[j + 1]] = [a[j + 1], a[j]];
+            swp++;
+            swapped = true;
+            result.push({ type: 'swap', j, i, arr: [...a], cmp, swp });
+          }
+        }
+        result.push({ type: 'pass-end', i, arr: [...a], cmp, swp, swapped });
+        if (!swapped) break;
+      }
+      result.push({ type: 'done', arr: [...a], cmp, swp });
+      return result;
+    }
+
+    function renderBars(a, highlights = {}, sortedFrom = Infinity) {
+      const max = Math.max(...a, 1);
+      const viz = $('viz-area');
+      viz.innerHTML = '';
+
+      a.forEach((v, i) => {
+        const h = Math.round((v / max) * SCALE);
+        let cls = 'bar';
+        if (i >= sortedFrom) cls += ' sorted';
+        if (highlights.cmp === i || highlights.cmp === i - 1) cls += ' comparing';
+        if (highlights.swap === i || highlights.swap === i - 1) cls += ' swapping';
+
+        const wrap = document.createElement('div');
+        wrap.className = 'bar-wrap';
+        wrap.innerHTML = `<span style="font-size:0.8rem;color:#e2e8f0;">${v}</span><div class="${cls}" style="height:${h}px"></div><span class="bar-label">[${i}]</span>`;
+        viz.appendChild(wrap);
+      });
+    }
+
+    function applyStep(s) {
+      const n = arr.length;
+      const log = $('step-log');
+      switch (s.type) {
+        case 'pass-start':
+          $('step-msg').innerHTML = `🔄 第 ${s.i + 1} 輪掃描開始。`;
+          renderBars(s.arr, {}, n - s.i);
+          break;
+        case 'compare':
+          $('step-msg').innerHTML = `🔍 比較 [${s.j}]=${s.arr[s.j]} 與 [${s.j + 1}]=${s.arr[s.j + 1]}`;
+          renderBars(s.arr, { cmp: s.j + 1 }, n - s.i);
+          $('stat-cmp').textContent = s.cmp;
+          break;
+        case 'swap':
+          $('step-msg').innerHTML = `🔄 交換 [${s.j}] 與 [${s.j + 1}]`;
+          renderBars(s.arr, { swap: s.j + 1 }, n - s.i);
+          $('stat-swp').textContent = s.swp;
+          break;
+        case 'pass-end':
+          $('step-msg').innerHTML = `✔️ 第 ${s.i + 1} 輪結束，最大值已就位。`;
+          renderBars(s.arr, {}, n - s.i - 1);
+          $('stat-pass').textContent = s.i + 1;
+          break;
+        case 'done':
+          $('step-msg').innerHTML = `🎉 排序完成！共比較 ${s.cmp} 次，交換 ${s.swp} 次。`;
+          renderBars(s.arr, {}, 0);
+          setBtns(false, true, false, false);
+          break;
+      }
+    }
+
+    function initSort() {
+      stopSort(); arr = parseInput(); if (arr.length < 2) return;
+      steps = computeSteps(arr); stepIdx = 0;
+      $('step-log').innerHTML = '';
+      renderBars(arr, {});
+      $('stat-size').textContent = arr.length;
+      $('stat-cmp').textContent = 0; $('stat-swp').textContent = 0; $('stat-pass').textContent = 0;
+      setBtns(false, false, true, true);
+    }
+
+    function playSort() {
+      setBtns(true, false, false, true);
+      function tick() {
+        if (stepIdx >= steps.length) return;
+        applyStep(steps[stepIdx++]);
+        playTimer = setTimeout(tick, 1600 - $('speed').value);
+      } tick();
+    }
+
+    function stopSort() { clearTimeout(playTimer); setBtns(false, true, true, true); }
+    function stepOnce() { if (stepIdx < steps.length) applyStep(steps[stepIdx++]); }
+    function setBtns(p, r, c, s) { $('btn-play').disabled = p; $('btn-stop').disabled = !s; $('btn-step').disabled = p || !c; }
+    $('speed').oninput = function () { $('speed-lbl').textContent = this.value + 'ms'; };
+    window.onload = initSort;
+  </script>
 </body>
+
 </html>
