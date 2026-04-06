@@ -1,110 +1,42 @@
 <!DOCTYPE html>
-<html lang="zh-tw">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>氣泡排序法演示</title>
+    <title>氣泡排序法 - 排序報告</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-        }
-        .array {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-        }
-        .element {
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            text-align: center;
-            margin: 0 5px;
-            border: 1px solid #333;
-            border-radius: 5px;
-            background-color: #f0f0f0;
-        }
-        .highlight {
-            background-color: #ffcccb;
-        }
-        .sorted {
-            background-color: #d4edda;
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; }
+        .nav-back { margin-bottom: 20px; }
+        .nav-back a { color: #8b949e; text-decoration: none; }
+        h2 { color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 10px; }
+        .content { background: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 6px; }
+        pre { background: #000; padding: 15px; overflow-x: auto; color: #d7dae0; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <h1>氣泡排序法演示</h1>
-    <p>按下「下一步」按鈕來查看排序過程。</p>
+    <div class="nav-back"><a href="index.html">← 返回首頁</a></div>
+    <h2>氣泡排序法 (Bubble Sort)</h2>
+    <div class="content">
+        <h3>1. 簡述原理</h3>
+        <p>重複走訪要排序的數列，一次比較兩個元素，如果順序錯誤就交換，直到沒有任何交換發生。 </p>
+        
+        <h3>2. 複雜度分析</h3>
+        <ul>
+            <li>最佳時間複雜度：$O(n)$</li>
+            <li>平均時間複雜度：$O(n^2)$</li>
+            <li>空間複雜度：$O(1)$</li>
+        </ul>
 
-    <div id="array-container" class="array">
-        <!-- 動態生成數組元素 -->
+        <h3>3. 模擬實作內容</h3>
+        <pre><code>// C 語言範例
+for (int i = 0; i < n - 1; i++) {
+    for (int j = 0; j < n - i - 1; j++) {
+        if (arr[j] > arr[j + 1]) {
+            int temp = arr[j];
+            arr[j] = arr[j + 1];
+            arr[j + 1] = temp;
+        }
+    }
+}</code></pre>
     </div>
-
-    <button id="next-step">下一步</button>
-
-    <script>
-        const array = [64, 34, 25, 12, 22, 11, 90];
-        let i = 0, j = 0;
-        const container = document.getElementById('array-container');
-        const nextStepButton = document.getElementById('next-step');
-
-        // 初始化數組顯示
-        function renderArray(highlightIndex1 = -1, highlightIndex2 = -1, sortedIndex = -1) {
-            container.innerHTML = '';
-            array.forEach((value, index) => {
-                const element = document.createElement('div');
-                element.className = 'element';
-                element.textContent = value;
-                if (index === highlightIndex1 || index === highlightIndex2) {
-                    element.classList.add('highlight');
-                }
-                if (index > sortedIndex) {
-                    element.classList.add('sorted');
-                }
-                container.appendChild(element);
-            });
-        }
-
-        // 氣泡排序的單步執行
-        function bubbleSortStep() {
-            if (i < array.length - 1) {
-                if (j < array.length - i - 1) {
-                    // 比較並交換
-                    if (array[j] > array[j + 1]) {
-                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
-                    }
-                    renderArray(j, j + 1, array.length - i - 1);
-                    j++;
-                } else {
-                    j = 0;
-                    i++;
-                }
-            } else {
-                renderArray(-1, -1, array.length - 1);
-                nextStepButton.disabled = true; // 禁用按鈕
-                alert('排序完成！');
-            }
-        }
-
-        // 初始化顯示
-        renderArray();
-
-        // 綁定按鈕事件
-        nextStepButton.addEventListener('click', bubbleSortStep);
-    </script>
 </body>
 </html>
-<button id="home-button">回首頁</button>
-
-<script>
-    document.getElementById('home-button').addEventListener('click', function() {
-        window.location.href = 'index.html'; // 替換為你的首頁路徑
-    });
-</script>
