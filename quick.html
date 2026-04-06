@@ -6,60 +6,241 @@
   <style>
     :root {
       --bg: #030712; --card: #111827; --primary: #fb7185; /* 鮮紅色 */
-      --accent: #6366f1; --text: #f9fafb; --border: #374151;
+      --accent: #6366f1; --text: #f9fafb; --text-muted: #9ca3af; --border: #374151;
     }
-    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; letter-spacing: 1px; }
+    
     .dashboard { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; margin-bottom: 20px; }
-    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; }
-    .viz-container { height: 260px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); }
-    .bar { width: 35px; background: var(--accent); border-radius: 4px; position: relative; transition: 0.3s; }
-    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; }
-    .bar.pivot { background: #f59e0b; outline: 2px solid #f59e0b; outline-offset: 2px; } /* 基準點 */
-    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; }
+    @media (max-width: 800px) { .dashboard { grid-template-columns: 1fr; } }
+    
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); margin-bottom: 20px; }
+    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; display: flex; align-items: center; gap: 8px; }
+    
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+    .btn-run { background: var(--primary); color: #000; }
+    .btn-step { background: var(--border); color: white; }
+    input { background: #1f2937; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; width: 200px; }
+    
+    /* 視覺化區域 */
+    .viz-container { height: 260px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+    .bar { width: 40px; background: var(--accent); border-radius: 4px 4px 0 0; position: relative; transition: all 0.3s ease; }
+    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.85rem; }
+    
+    .bar.sorted { background: #10b981; }
+    .bar.pivot { background: #eab308; outline: 3px solid #eab308; outline-offset: 2px; z-index: 10; } /* 基準點 */
+    .bar.comparing { background: #f472b6; transform: scale(1.05); } /* 比較中 */
+    .bar.swapping { background: #10b981; } /* 交換時 */
+    .bar.active-range { opacity: 1; }
+    .bar.inactive-range { opacity: 0.3; } /* 非此輪處理區間變暗 */
+    
+    .status-msg { padding: 14px; background: #1f2937; border-left: 4px solid var(--primary); border-radius: 6px; font-size: 0.95rem; min-height: 1.5rem;}
+    
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .stat-item { background: #1f2937; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+    
+    .info-text p { color: var(--text-muted); font-size: 0.95rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: var(--text-muted); }
+    th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: #e5e7eb; }
+    .good { color: #10b981; } .avg { color: #eab308; } .bad { color: #ef4444; }
+    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; line-height: 1.5; }
   </style>
 </head>
 <body>
+
 <h1>⚡ 快速排序法 Quick Sort</h1>
+
 <div class="dashboard">
   <main>
     <div class="card">
       <h2>模擬實作操作台</h2>
+      <div class="controls">
+        <label style="color:var(--text-muted);font-size:0.9rem;">輸入陣列：</label>
+        <input type="text" id="nums" value="64, 34, 25, 12, 22, 11, 90">
+        <button class="btn-run" onclick="startPlay()">▶ 自動排序</button>
+        <button class="btn-step" onclick="takeStep()">⏭ 單步觀察</button>
+        <button class="btn-step" onclick="reset()">🔄 重置</button>
+      </div>
       <div class="viz-container" id="viz"></div>
-      <div class="status-msg">快速排序透過 Pivot (基準點) 將陣列切分為兩半，效率極高。</div>
+      <div class="status-msg" id="msg">請點擊「自動排序」或「單步觀察」開始。</div>
     </div>
-    <div class="card">
+
+    <div class="card info-text">
       <h2>簡述原理</h2>
-      <p>挑選一個元素作為 <strong>Pivot (基準點)</strong>，重新排列陣列，使所有小於 Pivot 的元素都在其左側，大於的都在右側。這一步稱為 Partition (分割)。接著遞迴地對左右兩個子陣列重複此過程。</p>
+      <p>快速排序是最知名的高效演算法，同樣採用分而治之的策略。</p>
+      <p>核心動作是<strong>分割 (Partition)</strong>：在陣列中挑選一個基準值 (Pivot)，然後重新排列陣列，讓所有比 Pivot 小的元素移到它的左邊，比它大的移到右邊。這時 Pivot 就已經在最終正確的位置上了。接著對左右兩半重複此動作。</p>
     </div>
   </main>
+
   <aside>
     <div class="card">
+      <h2>執行統計</h2>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-value" id="c-cmp">0</div><div>比較次數</div></div>
+        <div class="stat-item"><div class="stat-value" id="c-swp">0</div><div>交換次數</div></div>
+      </div>
+    </div>
+
+    <div class="card">
       <h2>複雜度分析</h2>
-      <table style="width:100%; border-collapse: collapse; color: #9ca3af;">
-        <tr><th align="left">平均時間</th><td style="color:#10b981">O(n log n)</td></tr>
-        <tr><th align="left">最壞時間</th><td style="color:#ef4444">O(n²)</td></tr>
-        <tr><th align="left">空間複雜度</th><td style="color:#10b981">O(log n)</td></tr>
+      <table>
+        <tr><th>情況</th><th>時間複雜度</th></tr>
+        <tr><td>最佳 / 平均</td><td class="good">O(n log n)</td></tr>
+        <tr><td>最壞情況</td><td class="bad">O(n²)</td></tr>
+        <tr><th>空間複雜度</th><td class="avg">O(log n)</td></tr>
+        <tr><th>穩定性</th><td class="bad">不穩定</td></tr>
       </table>
+    </div>
+
+    <div class="card">
+      <h2>演算法邏輯</h2>
+      <pre>
+void quickSort(arr, low, high) {
+  if (low < high) {
+    // 取得基準點就位後的索引
+    pi = partition(arr, low, high)
+    
+    // 對左右兩側進行遞迴
+    quickSort(arr, low, pi - 1)
+    quickSort(arr, pi + 1, high)
+  }
+}</pre>
     </div>
   </aside>
 </div>
+
 <script>
-  let data = [10, 80, 30, 90, 40, 50, 70];
-  function render() {
-    const viz = document.getElementById('viz');
+  let data = [], steps = [], currentStep = 0, timer = null;
+  const viz = document.getElementById('viz');
+
+  function reset() {
+    clearTimeout(timer);
+    data = document.getElementById('nums').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    if(data.length === 0) data = [64, 34, 25, 12, 22, 11, 90];
+    steps = genSteps([...data]);
+    currentStep = 0;
+    render();
+    document.getElementById('msg').innerText = "陣列已重置，準備排序。";
+    document.getElementById('c-cmp').innerText = '0';
+    document.getElementById('c-swp').innerText = '0';
+  }
+
+  function genSteps(arr) {
+    let s = [], workingArr = [...arr], cmp = 0, swp = 0;
+    let sortedIndices = new Set(); // 記錄已定位的 Pivot
+
+    function quickSortRec(low, high) {
+        if (low < high) {
+            let pi = partition(low, high);
+            sortedIndices.add(pi);
+            s.push({ type: 'pivot-done', p: pi, arr: [...workingArr], cmp, swp, sorted: new Set(sortedIndices) });
+            quickSortRec(low, pi - 1);
+            quickSortRec(pi + 1, high);
+        } else if (low === high) {
+            sortedIndices.add(low);
+            s.push({ type: 'sorted-single', i: low, arr: [...workingArr], cmp, swp, sorted: new Set(sortedIndices) });
+        }
+    }
+
+    function partition(low, high) {
+        let pivot = workingArr[high];
+        s.push({ type: 'set-pivot', low, high, pivotIdx: high, arr: [...workingArr], cmp, swp, sorted: new Set(sortedIndices) });
+        let i = low - 1;
+        for (let j = low; j < high; j++) {
+            cmp++;
+            s.push({ type: 'compare', j, pivotIdx: high, low, high, arr: [...workingArr], cmp, swp, sorted: new Set(sortedIndices) });
+            if (workingArr[j] < pivot) {
+                i++;
+                if (i !== j) {
+                    [workingArr[i], workingArr[j]] = [workingArr[j], workingArr[i]];
+                    swp++;
+                    s.push({ type: 'swap', i, j, pivotIdx: high, low, high, arr: [...workingArr], cmp, swp, sorted: new Set(sortedIndices) });
+                }
+            }
+        }
+        if (i + 1 !== high) {
+            [workingArr[i + 1], workingArr[high]] = [workingArr[high], workingArr[i + 1]];
+            swp++;
+            s.push({ type: 'swap-pivot', i: i + 1, j: high, low, high, arr: [...workingArr], cmp, swp, sorted: new Set(sortedIndices) });
+        }
+        return i + 1;
+    }
+
+    quickSortRec(0, workingArr.length - 1);
+    s.push({ type: 'done', arr: [...workingArr], cmp, swp, sorted: new Set(workingArr.map((_, i) => i)) });
+    return s;
+  }
+
+  function render(step) {
+    const arr = step ? step.arr : data;
     viz.innerHTML = '';
-    const max = Math.max(...data);
-    data.forEach((val, i) => {
+    const max = Math.max(...arr, 1);
+    
+    arr.forEach((val, idx) => {
       const bar = document.createElement('div');
-      bar.className = 'bar' + (i === 6 ? ' pivot' : ''); // 假設最後一個是 pivot
-      bar.style.height = `${(val/max)*200}px`;
+      bar.className = 'bar';
+      bar.style.height = `${(val/max) * 200}px`;
       bar.setAttribute('data-value', val);
+      
+      if(step) {
+        if(step.type === 'done') { bar.classList.add('sorted'); }
+        else {
+          // 標示非作用區塊變暗
+          if (step.low !== undefined && step.high !== undefined && (idx < step.low || idx > step.high)) {
+             bar.classList.add('inactive-range');
+          }
+          // 已就位的 Pivot
+          if (step.sorted && step.sorted.has(idx)) {
+             bar.classList.add('sorted');
+             bar.classList.remove('inactive-range');
+          }
+          // 當前基準點
+          if (step.pivotIdx === idx && step.type !== 'swap-pivot') {
+             bar.classList.add('pivot');
+          }
+          // 比較與交換
+          if (step.type === 'compare' && idx === step.j) bar.classList.add('comparing');
+          if ((step.type === 'swap' || step.type === 'swap-pivot') && (idx === step.i || idx === step.j)) {
+             bar.classList.add('swapping');
+          }
+        }
+      }
       viz.appendChild(bar);
     });
   }
-  window.onload = render;
+
+  function takeStep() {
+    if(currentStep >= steps.length) return;
+    const s = steps[currentStep++];
+    render(s);
+    document.getElementById('c-cmp').innerText = s.cmp || 0;
+    document.getElementById('c-swp').innerText = s.swp || 0;
+    updateMsg(s);
+  }
+
+  function updateMsg(s) {
+    const m = document.getElementById('msg');
+    if(s.type === 'set-pivot') m.innerHTML = `📌 選定最右側的 <strong>${s.arr[s.pivotIdx]}</strong> 作為基準點 (Pivot)。`;
+    if(s.type === 'compare') m.innerHTML = `🔍 檢查 <strong>${s.arr[s.j]}</strong> 是否小於 Pivot。`;
+    if(s.type === 'swap') m.innerHTML = `🔄 <strong>${s.arr[s.j]}</strong> 較小，將其交換至左側。`;
+    if(s.type === 'swap-pivot') m.innerHTML = `📍 分割結束，將 Pivot 交換至中間正確位置。`;
+    if(s.type === 'pivot-done' || s.type === 'sorted-single') m.innerHTML = `✔️ 元素 <strong>${s.arr[s.p !== undefined ? s.p : s.i]}</strong> 已在最終正確位置上。`;
+    if(s.type === 'done') m.innerHTML = "🎉 排序完成！所有元素皆已就位。";
+  }
+
+  function startPlay() {
+    if(currentStep >= steps.length) reset();
+    clearTimeout(timer);
+    timer = setInterval(() => {
+      if(currentStep >= steps.length) clearInterval(timer);
+      else takeStep();
+    }, 450);
+  }
+
+  window.onload = reset;
 </script>
 </body>
 </html>

@@ -9,74 +9,220 @@
       --accent: #6366f1; --text: #f9fafb; --text-muted: #9ca3af; --border: #374151;
     }
     body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
-    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
+    h1 { text-align: center; color: var(--primary); margin-bottom: 30px; letter-spacing: 1px; }
+    
     .dashboard { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.8fr 1fr; gap: 20px; }
+    @media (max-width: 800px) { .dashboard { grid-template-columns: 1fr; } }
+    
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 22px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); margin-bottom: 20px; }
-    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; }
+    h2 { color: var(--primary); font-size: 1.15rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; display: flex; align-items: center; gap: 8px; }
+    
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+    .btn-run { background: var(--primary); color: #000; }
+    .btn-step { background: var(--border); color: white; }
+    input { background: #1f2937; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; width: 200px; }
+    
+    /* 視覺化區域 */
     .viz-container { height: 260px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-    .bar { width: 35px; background: var(--accent); border-radius: 4px; position: relative; transition: all 0.3s; }
-    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; }
-    .bar.active { background: #f43f5e; } /* 正在處理的子陣列範圍 */
+    .bar { width: 40px; background: var(--accent); border-radius: 4px 4px 0 0; position: relative; transition: all 0.3s ease; }
+    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.85rem; }
+    
     .bar.sorted { background: #10b981; }
-    .status-msg { padding: 14px; background: #1f2937; border-left: 4px solid var(--primary); border-radius: 6px; font-size: 0.95rem; }
+    .bar.active-range { background: #3b82f6; opacity: 0.8; } /* 正在處理的子陣列 */
+    .bar.comparing { background: #eab308; transform: scale(1.05); z-index: 10; } /* 比較中 */
+    .bar.writing { background: #ec4899; } /* 寫回陣列 */
+    
+    .status-msg { padding: 14px; background: #1f2937; border-left: 4px solid var(--primary); border-radius: 6px; font-size: 0.95rem; min-height: 1.5rem;}
+    
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .stat-item { background: #1f2937; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+    
+    .info-text p { color: var(--text-muted); font-size: 0.95rem; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; color: var(--text-muted); }
     th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); }
-    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; }
+    th { color: #e5e7eb; }
+    .good { color: #10b981; } .bad { color: #ef4444; }
+    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; line-height: 1.5; }
   </style>
 </head>
 <body>
+
 <h1>🧬 合併排序法 Merge Sort</h1>
+
 <div class="dashboard">
   <main>
     <div class="card">
       <h2>模擬實作操作台</h2>
+      <div class="controls">
+        <label style="color:var(--text-muted);font-size:0.9rem;">輸入陣列：</label>
+        <input type="text" id="nums" value="38, 27, 43, 3, 9, 82, 10">
+        <button class="btn-run" onclick="startPlay()">▶ 自動排序</button>
+        <button class="btn-step" onclick="takeStep()">⏭ 單步觀察</button>
+        <button class="btn-step" onclick="reset()">🔄 重置</button>
+      </div>
       <div class="viz-container" id="viz"></div>
-      <div class="status-msg" id="msg">準備就緒</div>
+      <div class="status-msg" id="msg">請點擊「自動排序」或「單步觀察」開始。</div>
     </div>
-    <div class="card">
+
+    <div class="card info-text">
       <h2>簡述原理</h2>
-      <p>合併排序採用<strong>分而治之</strong>策略。首先將陣列遞迴地切分成兩半，直到每個子陣列只剩一個元素（此時自然已排序）。接著執行「合併」動作：將兩個已排序的子陣列合併成一個更大的、已排序的陣列，直到合併回原始長度。</p>
+      <p>合併排序法採用<strong>分而治之 (Divide and Conquer)</strong> 策略。</p>
+      <p>首先將陣列不斷從中間對切，直到每個子陣列只剩下一個元素（此時視為已排序）。接著執行「合併」：比較兩個已排序的子陣列的第一個元素，將較小的拿出放入暫存陣列，不斷重複直到兩個子陣列完美合併成一個較大的有序陣列。</p>
     </div>
   </main>
+
   <aside>
+    <div class="card">
+      <h2>執行統計</h2>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-value" id="c-cmp">0</div><div>比較次數</div></div>
+        <div class="stat-item"><div class="stat-value" id="c-wr">0</div><div>陣列寫入</div></div>
+      </div>
+    </div>
+
     <div class="card">
       <h2>複雜度分析</h2>
       <table>
         <tr><th>情況</th><th>時間複雜度</th></tr>
-        <tr><td>最佳 / 最壞</td><td style="color:#10b981">O(n log n)</td></tr>
-        <tr><td>空間複雜度</td><td style="color:#ef4444">O(n)</td></tr>
-        <tr><td>穩定性</td><td style="color:#10b981">穩定</td></tr>
+        <tr><td>最佳情況</td><td class="good">O(n log n)</td></tr>
+        <tr><td>平均 / 最壞</td><td class="good">O(n log n)</td></tr>
+        <tr><th>空間複雜度</th><td class="bad">O(n)</td></tr>
+        <tr><th>穩定性</th><td class="good">穩定</td></tr>
       </table>
     </div>
+
     <div class="card">
-      <h2>核心邏輯 (C++)</h2>
+      <h2>演算法邏輯</h2>
       <pre>
-void mergeSort(int a[], int l, int r) {
-  if (l < r) {
-    int m = l + (r - l) / 2;
-    mergeSort(a, l, m);
-    mergeSort(a, m + 1, r);
-    merge(a, l, m, r);
+void mergeSort(arr, L, R) {
+  if (L < R) {
+    mid = L + (R - L) / 2
+    mergeSort(arr, L, mid)
+    mergeSort(arr, mid+1, R)
+    merge(arr, L, mid, R)
   }
 }</pre>
     </div>
   </aside>
 </div>
+
 <script>
-  let data = [38, 27, 43, 3, 9, 82, 10];
+  let data = [], steps = [], currentStep = 0, timer = null;
   const viz = document.getElementById('viz');
-  function render() {
+
+  function reset() {
+    clearTimeout(timer);
+    data = document.getElementById('nums').value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    if(data.length === 0) data = [38, 27, 43, 3, 9, 82, 10];
+    steps = genSteps([...data]);
+    currentStep = 0;
+    render();
+    document.getElementById('msg').innerText = "陣列已重置，準備排序。";
+    document.getElementById('c-cmp').innerText = '0';
+    document.getElementById('c-wr').innerText = '0';
+  }
+
+  function genSteps(arr) {
+    let s = [], workingArr = [...arr], cmp = 0, wr = 0;
+
+    function mergeSortRec(l, r) {
+        if (l >= r) return;
+        let m = Math.floor((l + r) / 2);
+        s.push({ type: 'split', l, r, m, arr: [...workingArr], cmp, wr });
+        mergeSortRec(l, m);
+        mergeSortRec(m + 1, r);
+        merge(l, m, r);
+    }
+
+    function merge(l, m, r) {
+        s.push({ type: 'merge-start', l, m, r, arr: [...workingArr], cmp, wr });
+        let temp = [], i = l, j = m + 1;
+        while (i <= m && j <= r) {
+            cmp++;
+            s.push({ type: 'compare', l, r, i, j, arr: [...workingArr], cmp, wr });
+            if (workingArr[i] <= workingArr[j]) temp.push(workingArr[i++]);
+            else temp.push(workingArr[j++]);
+        }
+        while (i <= m) temp.push(workingArr[i++]);
+        while (j <= r) temp.push(workingArr[j++]);
+
+        for (let k = 0; k < temp.length; k++) {
+            workingArr[l + k] = temp[k];
+            wr++;
+            s.push({ type: 'write', l: l, r: r, target: l + k, val: temp[k], arr: [...workingArr], cmp, wr });
+        }
+        s.push({ type: 'merge-done', l, r, arr: [...workingArr], cmp, wr });
+    }
+
+    mergeSortRec(0, workingArr.length - 1);
+    s.push({ type: 'done', arr: [...workingArr], cmp, wr });
+    return s;
+  }
+
+  function render(step) {
+    const arr = step ? step.arr : data;
     viz.innerHTML = '';
-    const max = Math.max(...data);
-    data.forEach(val => {
+    const max = Math.max(...arr, 1);
+    
+    arr.forEach((val, idx) => {
       const bar = document.createElement('div');
       bar.className = 'bar';
-      bar.style.height = `${(val/max)*200}px`;
+      bar.style.height = `${(val/max) * 200}px`;
       bar.setAttribute('data-value', val);
+      
+      if(step) {
+        if(step.type === 'done') { bar.classList.add('sorted'); }
+        else {
+          // 標示正在處理的區間
+          if (step.l !== undefined && step.r !== undefined && idx >= step.l && idx <= step.r) {
+             bar.classList.add('active-range');
+          }
+          if (step.type === 'compare' && (idx === step.i || idx === step.j)) {
+             bar.classList.add('comparing');
+          }
+          if (step.type === 'write' && idx === step.target) {
+             bar.classList.add('writing');
+          }
+          if (step.type === 'merge-done' && idx >= step.l && idx <= step.r) {
+             bar.classList.add('sorted');
+          }
+        }
+      }
       viz.appendChild(bar);
     });
   }
-  window.onload = render;
+
+  function takeStep() {
+    if(currentStep >= steps.length) return;
+    const s = steps[currentStep++];
+    render(s);
+    document.getElementById('c-cmp').innerText = s.cmp || 0;
+    document.getElementById('c-wr').innerText = s.wr || 0;
+    updateMsg(s);
+  }
+
+  function updateMsg(s) {
+    const m = document.getElementById('msg');
+    if(s.type === 'split') m.innerHTML = `✂️ 將區間 [${s.l} 到 ${s.r}] 分割為兩半。`;
+    if(s.type === 'merge-start') m.innerHTML = `🔄 準備合併區間 [${s.l} 到 ${s.r}]。`;
+    if(s.type === 'compare') m.innerHTML = `🔍 比較左右陣列元素：<strong>${s.arr[s.i]}</strong> 與 <strong>${s.arr[s.j]}</strong>。`;
+    if(s.type === 'write') m.innerHTML = `✍️ 寫入較小的元素 <strong>${s.val}</strong>。`;
+    if(s.type === 'merge-done') m.innerHTML = `✔️ 區間 [${s.l} 到 ${s.r}] 合併完成。`;
+    if(s.type === 'done') m.innerHTML = "🎉 排序完成！";
+  }
+
+  function startPlay() {
+    if(currentStep >= steps.length) reset();
+    clearTimeout(timer);
+    timer = setInterval(() => {
+      if(currentStep >= steps.length) clearInterval(timer);
+      else takeStep();
+    }, 450);
+  }
+
+  window.onload = reset;
 </script>
 </body>
 </html>
