@@ -1,159 +1,155 @@
 <!DOCTYPE html>
-<html lang="zh-tw">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>選擇排序法演示</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .array {
-            display: flex;
-            justify-content: center;
-            margin: 10px 0;
-            flex-wrap: wrap;
-        }
-        .element {
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            text-align: center;
-            margin: 0 5px 5px 0;
-            border: 1px solid #333;
-            border-radius: 5px;
-            background-color: #f0f0f0;
-        }
-        .highlight {
-            background-color: #ffcccb;
-        }
-        .min {
-            background-color: #ffe58f;
-        }
-        .sorted {
-            background-color: #d4edda;
-        }
-        button {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        input[type=number] {
-            width: 80px;
-            padding: 8px;
-            font-size: 16px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Selection Sort 視覺化實作</title>
+  <style>
+    :root {
+      --bg: #030712; --card: #111827; --primary: #6366f1; --accent: #10b981;
+      --text: #f9fafb; --border: #374151;
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+    .dashboard { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); }
+    h2 { color: var(--primary); font-size: 1.1rem; margin-top: 0; border-left: 4px solid var(--primary); padding-left: 10px; }
+    
+    /* 視覺化區域 */
+    .viz-container { height: 250px; display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 20px 0; border-bottom: 2px solid var(--border); }
+    .bar { width: 35px; background: var(--primary); border-radius: 4px 4px 0 0; position: relative; transition: all 0.3s ease; }
+    .bar::after { content: attr(data-value); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; }
+    .bar.comparing { background: #f59e0b; transform: scaleX(1.1); }
+    .bar.is-min { background: #ec4899; }
+    .bar.sorted { background: var(--accent); opacity: 0.8; }
+
+    .controls { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+    .btn-run { background: var(--primary); color: white; }
+    .btn-step { background: var(--border); color: white; }
+    input { background: #1f2937; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 6px; }
+    
+    .status-msg { padding: 12px; background: #1f2937; border-radius: 8px; font-size: 0.9rem; min-height: 1.2rem; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .stat-item { background: #1f2937; padding: 10px; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+    
+    pre { background: #000; padding: 15px; border-radius: 8px; font-size: 0.85rem; color: #a5b4fc; overflow-x: auto; }
+  </style>
 </head>
 <body>
-    <h1>選擇排序法演示</h1>
-    <p>設定元素數量，然後按「生成陣列」開始。按「下一步」查看排序過程。</p>
 
-    <div class="controls">
-        <label for="count">元素數量：</label>
-        <input id="count" type="number" min="2" max="20" value="7" />
-        <button id="generate">生成陣列</button>
-        <button id="next-step" disabled>下一步</button>
+<div class="dashboard">
+  <main>
+    <div class="card">
+      <h2>Selection Sort 視覺化控制台</h2>
+      <div class="controls">
+        <input type="text" id="nums" value="45, 12, 89, 33, 27, 50">
+        <button class="btn-run" onclick="startPlay()">▶ 自動執行</button>
+        <button class="btn-step" onclick="takeStep()">⏭ 單步</button>
+        <button class="btn-step" onclick="reset()">🔄 重置</button>
+      </div>
+      <div class="viz-container" id="viz"></div>
+      <div class="status-msg" id="msg">準備就緒</div>
     </div>
+  </main>
 
-    <div id="array-container" class="array">
-        <!-- 動態生成數組元素 -->
+  <aside>
+    <div class="card">
+      <h2>執行統計</h2>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="stat-value" id="c-cmp">0</div><div>比較</div></div>
+        <div class="stat-item"><div class="stat-value" id="c-swp">0</div><div>交換</div></div>
+      </div>
     </div>
+    <div class="card" style="margin-top:20px;">
+      <h2>演算法邏輯</h2>
+      <pre>
+for i from 0 to n-1:
+  min = i
+  for j from i+1 to n:
+    if arr[j] < arr[min]:
+      min = j
+  swap(arr[i], arr[min])</pre>
+    </div>
+  </aside>
+</div>
 
-    <script>
-        let array = [];
-        let i = 0, j = 0, minIndex = 0;
-        const container = document.getElementById('array-container');
-        const nextStepButton = document.getElementById('next-step');
-        const generateButton = document.getElementById('generate');
-        const countInput = document.getElementById('count');
+<script>
+  let data = [], steps = [], currentStep = 0, timer = null;
+  const viz = document.getElementById('viz');
 
-        function randomArray(count) {
-            const result = [];
-            for (let k = 0; k < count; k++) {
-                result.push(Math.floor(Math.random() * 90) + 10);
-            }
-            return result;
+  function reset() {
+    clearTimeout(timer);
+    data = document.getElementById('nums').value.split(',').map(n => parseInt(n.trim()));
+    steps = genSteps([...data]);
+    currentStep = 0;
+    render();
+    document.getElementById('msg').innerText = "已重置資料";
+  }
+
+  function genSteps(arr) {
+    let s = [], n = arr.length, cmp = 0, swp = 0;
+    for(let i=0; i<n-1; i++) {
+      let min = i;
+      s.push({ type: 'start-pass', i, min, arr: [...arr] });
+      for(let j=i+1; j<n; j++) {
+        cmp++;
+        s.push({ type: 'scan', i, j, min, arr: [...arr], cmp, swp });
+        if(arr[j] < arr[min]) {
+          min = j;
+          s.push({ type: 'new-min', i, j, min, arr: [...arr], cmp, swp });
         }
+      }
+      if(min !== i) { [arr[i], arr[min]] = [arr[min], arr[i]]; swp++; }
+      s.push({ type: 'swap', i, min, arr: [...arr], cmp, swp });
+    }
+    s.push({ type: 'done', arr: [...arr] });
+    return s;
+  }
 
-        function renderArray(highlightIndex = -1, highlightIndex2 = -1, minIdx = -1, sortedBoundary = -1) {
-            container.innerHTML = '';
-            array.forEach((value, index) => {
-                const element = document.createElement('div');
-                element.className = 'element';
-                element.textContent = value;
-                if (index === highlightIndex || index === highlightIndex2) {
-                    element.classList.add('highlight');
-                }
-                if (index === minIdx) {
-                    element.classList.add('min');
-                }
-                if (index < sortedBoundary) {
-                    element.classList.add('sorted');
-                }
-                container.appendChild(element);
-            });
-        }
+  function render(step) {
+    const arr = step ? step.arr : data;
+    viz.innerHTML = '';
+    const max = Math.max(...arr);
+    arr.forEach((val, idx) => {
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = `${(val/max) * 200}px`;
+      bar.setAttribute('data-value', val);
+      if(step) {
+        if(idx < step.i || step.type === 'done') bar.classList.add('sorted');
+        if(idx === step.j) bar.classList.add('comparing');
+        if(idx === step.min) bar.classList.add('is-min');
+      }
+      viz.appendChild(bar);
+    });
+  }
 
-        function resetState() {
-            i = 0;
-            j = 1;
-            minIndex = 0;
-            nextStepButton.disabled = false;
-        }
+  function takeStep() {
+    if(currentStep >= steps.length) return;
+    const s = steps[currentStep++];
+    render(s);
+    if(s.cmp) document.getElementById('c-cmp').innerText = s.cmp;
+    if(s.swp) document.getElementById('c-swp').innerText = s.swp;
+    updateMsg(s);
+  }
 
-        function selectionSortStep() {
-            if (i >= array.length - 1) {
-                renderArray(-1, -1, -1, array.length);
-                nextStepButton.disabled = true;
-                alert('排序完成！');
-                return;
-            }
+  function updateMsg(s) {
+    const m = document.getElementById('msg');
+    if(s.type === 'scan') m.innerText = `正在檢查索引 ${s.j} 是否比目前的最小值 ${s.arr[s.min]} 更小`;
+    if(s.type === 'new-min') m.innerHTML = `✨ 發現更小值！更新最小值索引為 ${s.min} (數值: ${s.arr[s.min]})`;
+    if(s.type === 'swap') m.innerText = s.i === s.min ? `第 ${s.i} 位已是最小，無需交換` : `交換索引 ${s.i} 與最小值索引 ${s.min}`;
+    if(s.type === 'done') m.innerText = "🎉 排序完成！";
+  }
 
-            // 在當前 i 位置尋找最小值
-            if (j < array.length) {
-                if (array[j] < array[minIndex]) {
-                    minIndex = j;
-                }
-                renderArray(i, j, minIndex, i);
-                j++;
-            } else {
-                // 將最小值放到 i 位置
-                if (minIndex !== i) {
-                    [array[i], array[minIndex]] = [array[minIndex], array[i]];
-                }
-                i++;
-                minIndex = i;
-                j = i + 1;
-                renderArray(i, j, minIndex, i);
-            }
-        }
+  function startPlay() {
+    if(currentStep >= steps.length) reset();
+    timer = setInterval(() => {
+      if(currentStep >= steps.length) clearInterval(timer);
+      else takeStep();
+    }, 400);
+  }
 
-        function generateArray() {
-            const count = parseInt(countInput.value, 10);
-            if (Number.isNaN(count) || count < 2 || count > 20) {
-                alert('請輸入 2~20 之間的元素數量。');
-                return;
-            }
-            array = randomArray(count);
-            resetState();
-            renderArray(i, j, minIndex, 0);
-        }
-
-        generateButton.addEventListener('click', generateArray);
-        nextStepButton.addEventListener('click', selectionSortStep);
-
-        // 初次生成
-        generateArray();
-    </script>
+  window.onload = reset;
+</script>
 </body>
 </html>
